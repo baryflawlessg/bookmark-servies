@@ -20,7 +20,6 @@
 - Create Favorite entity (userId, bookId, createdAt) - Composite primary key
 - Set up JPA relationships and constraints
 - Create database indexes for performance
-- Set up database migration scripts (Flyway or Liquibase)
 - Create data seeding script for 200 books
 
 ## Repository Layer

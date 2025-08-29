@@ -6,21 +6,19 @@ import com.bookverse.dto.PageResponse;
 import com.bookverse.dto.ReviewDTO;
 import com.bookverse.dto.SearchCriteriaDTO;
 import com.bookverse.entity.Book;
-import com.bookverse.entity.BookGenre;
 import com.bookverse.entity.Review;
 import com.bookverse.repository.BookRepository;
 import com.bookverse.repository.ReviewRepository;
 import com.bookverse.service.BookService;
 import com.bookverse.service.mapper.EntityMapper;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -33,38 +31,48 @@ public class BookServiceImpl implements BookService {
     private final ReviewRepository reviewRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public PageResponse<BookDTO> searchBooks(SearchCriteriaDTO criteria) {
         int page = criteria.getPage() != null ? criteria.getPage() : 0;
         int size = criteria.getSize() != null ? criteria.getSize() : 20;
         Sort sort = resolveSort(criteria.getSortBy(), criteria.getSortDirection());
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Book> result;
-        String query = criteria.getQuery();
-        List<BookGenre.Genre> genres = criteria.getGenres();
-
-        if (genres != null && !genres.isEmpty()) {
-            result = bookRepository.findByGenres(genres, pageable);
-        } else if (query != null && !query.isBlank()) {
-            result = bookRepository.findByTitleOrAuthorContainingIgnoreCase(query, pageable);
-        } else if (criteria.getMinRating() != null) {
-            result = bookRepository.findByAverageRatingGreaterThanEqual(criteria.getMinRating(), pageable);
-        } else if (criteria.getMinYear() != null && criteria.getMaxYear() != null) {
-            result = bookRepository.findByPublishedYearBetween(criteria.getMinYear(), criteria.getMaxYear(), pageable);
-        } else {
-            result = bookRepository.findAll(pageable);
+        // Use the new findBooks method
+        Page<Book> result = bookRepository.findBooks(
+            criteria.getQuery(),
+            criteria.getGenres(),
+            criteria.getMinYear(),
+            criteria.getMaxYear(),
+            criteria.getMinRating(),
+            pageable
+        );
+        
+        // Debug logging
+        System.out.println("Found " + result.getTotalElements() + " books total");
+        System.out.println("Page content size: " + result.getContent().size());
+        if (!result.getContent().isEmpty()) {
+            System.out.println("First book: " + result.getContent().get(0).getTitle());
         }
 
         List<BookDTO> items = result.getContent().stream().map(EntityMapper::toBookDTO).collect(Collectors.toList());
+        
+        // Debug logging
+        System.out.println("Mapped to " + items.size() + " DTOs");
+        if (!items.isEmpty()) {
+            System.out.println("First DTO: " + items.get(0).getTitle());
+        }
+        
         return EntityMapper.toPageResponse(items, page, size, result.getTotalElements());
     }
 
     private Sort resolveSort(String sortBy, String direction) {
         String column = Objects.requireNonNullElse(sortBy, "title");
-        Sort sort = switch (column) {
+        Sort sort = switch (column.toLowerCase()) {
             case "author" -> Sort.by("author");
-            case "rating" -> Sort.by(Sort.Order.desc("reviews.rating"));
-            case "date" -> Sort.by(Sort.Order.desc("createdAt"));
+            case "rating" -> Sort.by("id"); // Use ID as fallback since rating requires special handling
+            case "date", "publicationdate" -> Sort.by("publishedYear");
+            case "price" -> Sort.by("id"); // Use ID as fallback since price field doesn't exist
             default -> Sort.by("title");
         };
         if ("desc".equalsIgnoreCase(direction)) {
@@ -95,9 +103,9 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public List<BookDTO> getFeaturedBooks() {
-        // Simple implementation: return top-rated books
-        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "averageRating"));
-        Page<Book> featuredBooksPage = bookRepository.findTopRatedBooks(pageable);
+        // Use simple findAll for featured books
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "id"));
+        Page<Book> featuredBooksPage = bookRepository.findAll(pageable);
         
         return featuredBooksPage.getContent().stream()
                 .map(EntityMapper::toBookDTO)

@@ -45,6 +45,12 @@ public class ReviewServiceImpl implements ReviewService {
         review.setReviewText(request.getReviewText());
 
         Review saved = reviewRepository.save(review);
+        
+        // Update book's rating stats after adding review
+        book.addReview(saved);
+        book.updateRatingStats();
+        bookRepository.save(book);
+        
         return EntityMapper.toReviewDTO(saved);
     }
 
@@ -56,9 +62,16 @@ public class ReviewServiceImpl implements ReviewService {
         if (!review.isOwnedBy(userId)) {
             throw new SecurityException("Cannot edit a review you do not own");
         }
+        
+        Book book = review.getBook();
         review.setRating(request.getRating());
         review.setReviewText(request.getReviewText());
         Review saved = reviewRepository.save(review);
+        
+        // Update book's rating stats after updating review
+        book.updateRatingStats();
+        bookRepository.save(book);
+        
         return EntityMapper.toReviewDTO(saved);
     }
 
@@ -70,7 +83,13 @@ public class ReviewServiceImpl implements ReviewService {
         if (!review.isOwnedBy(userId)) {
             throw new SecurityException("Cannot delete a review you do not own");
         }
+        
+        Book book = review.getBook();
         reviewRepository.delete(review);
+        
+        // Update book's rating stats after deleting review
+        book.updateRatingStats();
+        bookRepository.save(book);
     }
 
     @Override

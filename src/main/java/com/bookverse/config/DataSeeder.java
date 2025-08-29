@@ -114,6 +114,10 @@ public class DataSeeder {
         book.setPublishedYear(publishedYear);
         book.setCoverImageUrl(coverImageUrl);
         
+        // Initialize rating stats
+        book.setAverageRating(0.0);
+        book.setReviewCount(0);
+        
         // Add genres
         for (BookGenre.Genre genre : genres) {
             BookGenre bookGenre = new BookGenre();
@@ -130,7 +134,8 @@ public class DataSeeder {
         List<User> users = Arrays.asList(
             createUser("john.doe@example.com", "password123", "John Doe"),
             createUser("jane.smith@example.com", "password123", "Jane Smith"),
-            createUser("admin@bookverse.com", "admin123", "Admin User")
+            createUser("admin@bookverse.com", "admin123", "Admin User"),
+            createUser("1@email.com", "email1", "User One")
         );
         
         userRepository.saveAll(users);

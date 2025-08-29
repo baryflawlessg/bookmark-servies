@@ -12,7 +12,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RecommendationDTO {
-    private String type; // top-rated, genre-based, ai
+    private String type; // top-rated, user-genre-based, popular
     private String title; // display title
+    private String description; // explanation of why these books are recommended
     private List<BookDTO> books;
 }

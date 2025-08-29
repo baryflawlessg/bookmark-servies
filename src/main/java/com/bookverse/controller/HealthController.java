@@ -1,24 +1,31 @@
 package com.bookverse.controller;
 
+import com.bookverse.repository.BookRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/health")
+@RequiredArgsConstructor
 public class HealthController {
 
+    private final BookRepository bookRepository;
+
     @GetMapping
-    public Map<String, Object> health() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "UP");
-        response.put("timestamp", LocalDateTime.now());
-        response.put("service", "BookVerse API");
-        response.put("version", "1.0.0");
-        return response;
+    public ResponseEntity<String> health() {
+        return ResponseEntity.ok("OK");
+    }
+
+    @GetMapping("/db")
+    public ResponseEntity<String> databaseHealth() {
+        try {
+            long count = bookRepository.count();
+            return ResponseEntity.ok("Database OK - Book count: " + count);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Database Error: " + e.getMessage());
+        }
     }
 }

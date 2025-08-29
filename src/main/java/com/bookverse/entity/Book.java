@@ -30,12 +30,12 @@ public class Book {
 
     @NotBlank(message = "Title is required")
     @Size(max = 255, message = "Title must not exceed 255 characters")
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     private String title;
 
     @NotBlank(message = "Author is required")
     @Size(max = 255, message = "Author name must not exceed 255 characters")
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "VARCHAR(255)")
     private String author;
 
     @Column(columnDefinition = "TEXT")
@@ -51,6 +51,13 @@ public class Book {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    // Calculated fields for performance
+    @Column(name = "average_rating")
+    private Double averageRating;
+
+    @Column(name = "review_count")
+    private Integer reviewCount;
 
     // Relationships
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -95,16 +102,24 @@ public class Book {
 
     // Business methods
     public double getAverageRating() {
-        if (reviews == null || reviews.isEmpty()) {
-            return 0.0;
-        }
-        return reviews.stream()
-                .mapToInt(Review::getRating)
-                .average()
-                .orElse(0.0);
+        return averageRating != null ? averageRating : 0.0;
     }
 
     public int getReviewCount() {
-        return reviews != null ? reviews.size() : 0;
+        return reviewCount != null ? reviewCount : 0;
+    }
+
+    // Update calculated fields when reviews change
+    public void updateRatingStats() {
+        if (reviews == null || reviews.isEmpty()) {
+            this.averageRating = 0.0;
+            this.reviewCount = 0;
+        } else {
+            this.reviewCount = reviews.size();
+            this.averageRating = reviews.stream()
+                    .mapToInt(Review::getRating)
+                    .average()
+                    .orElse(0.0);
+        }
     }
 }

@@ -14,34 +14,18 @@ import java.util.List;
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
 
-    // Search by title or author
-    @Query("SELECT b FROM Book b WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR LOWER(b.author) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
-    Page<Book> findByTitleOrAuthorContainingIgnoreCase(@Param("searchTerm") String searchTerm, Pageable pageable);
-    
-    // Find by genre
-    @Query("SELECT DISTINCT b FROM Book b JOIN b.genres g WHERE g.genre = :genre")
-    Page<Book> findByGenre(@Param("genre") BookGenre.Genre genre, Pageable pageable);
-    
-    // Find by published year range
-    Page<Book> findByPublishedYearBetween(Integer startYear, Integer endYear, Pageable pageable);
-    
-    // Find top rated books
-    @Query("SELECT b FROM Book b LEFT JOIN b.reviews r GROUP BY b ORDER BY AVG(r.rating) DESC NULLS LAST")
-    Page<Book> findTopRatedBooks(Pageable pageable);
-    
-    // Find books with reviews count
-    @Query("SELECT b FROM Book b LEFT JOIN b.reviews r GROUP BY b ORDER BY COUNT(r) DESC")
-    Page<Book> findMostReviewedBooks(Pageable pageable);
-    
-    // Find books by multiple genres
-    @Query("SELECT DISTINCT b FROM Book b JOIN b.genres g WHERE g.genre IN :genres")
-    Page<Book> findByGenres(@Param("genres") List<BookGenre.Genre> genres, Pageable pageable);
-    
-    // Find books with average rating above threshold
-    @Query("SELECT b FROM Book b LEFT JOIN b.reviews r GROUP BY b HAVING AVG(r.rating) >= :minRating")
-    Page<Book> findByAverageRatingGreaterThanEqual(@Param("minRating") Double minRating, Pageable pageable);
-    
-    // Find books with full details (including reviews and genres)
-    @Query("SELECT b FROM Book b LEFT JOIN FETCH b.reviews r LEFT JOIN FETCH b.genres g WHERE b.id = :bookId")
-    Book findByIdWithDetails(@Param("bookId") Long bookId);
+    @Query("SELECT DISTINCT b FROM Book b " +
+           "LEFT JOIN b.genres g " +
+           "WHERE (:title IS NULL OR :title = '' OR b.title LIKE %:title%) " +
+           "AND (:minYear IS NULL OR b.publishedYear >= :minYear) " +
+           "AND (:maxYear IS NULL OR b.publishedYear <= :maxYear) " +
+           "AND (:minRating IS NULL OR COALESCE(b.averageRating, 0.0) >= :minRating) " +
+           "AND (:genres IS NULL OR g.genre IN :genres)")
+    Page<Book> findBooks(
+        @Param("title") String title,
+        @Param("genres") List<BookGenre.Genre> genres,
+        @Param("minYear") Integer minYear,
+        @Param("maxYear") Integer maxYear,
+        @Param("minRating") Double minRating,
+        Pageable pageable);
 }

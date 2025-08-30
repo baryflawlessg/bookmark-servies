@@ -5,16 +5,14 @@ FROM gradle:7.6.1-jdk17 AS builder
 WORKDIR /app
 
 # Copy Gradle files
-COPY gradlew .
 COPY gradle gradle
 COPY build.gradle .
-COPY settings.gradle .
 
 # Copy source code
 COPY src src
 
 # Build the application
-RUN ./gradlew build --no-daemon
+RUN gradle build --no-daemon
 
 # Runtime stage
 FROM openjdk:17-jdk-slim

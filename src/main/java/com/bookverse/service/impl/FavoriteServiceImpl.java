@@ -38,6 +38,7 @@ public class FavoriteServiceImpl implements FavoriteService {
         Favorite favorite = new Favorite();
         favorite.setUser(user);
         favorite.setBook(book);
+        
         Favorite saved = favoriteRepository.save(favorite);
         return EntityMapper.toFavoriteDTO(saved);
     }

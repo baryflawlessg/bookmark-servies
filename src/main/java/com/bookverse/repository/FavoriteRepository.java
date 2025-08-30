@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface FavoriteRepository extends JpaRepository<Favorite, Favorite.FavoriteId> {
+public interface FavoriteRepository extends JpaRepository<Favorite, Long> {
 
     // Find favorites by user
     Page<Favorite> findByUserId(Long userId, Pageable pageable);

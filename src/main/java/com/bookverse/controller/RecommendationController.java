@@ -261,4 +261,55 @@ public class RecommendationController {
     ) {
         return ResponseEntity.ok(com.bookverse.dto.ApiResponse.ok(recommendationService.getUserBasedRecommendations(userId, limit)));
     }
+
+    @GetMapping("/favorites-genre-based")
+    @io.swagger.v3.oas.annotations.Operation(
+        summary = "Get Genre-Based Recommendations from Favorites",
+        description = "Retrieve personalized recommendations based on genres of user's favorite books with weighted scoring"
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Genre-based recommendations from favorites retrieved successfully",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                mediaType = "application/json",
+                schema = @io.swagger.v3.oas.annotations.media.Schema(implementation = com.bookverse.dto.ApiResponse.class),
+                examples = @io.swagger.v3.oas.annotations.media.ExampleObject(
+                    name = "Success Response",
+                    value = """
+                        {
+                          "success": true,
+                          "message": "OK",
+                          "data": [
+                            {
+                              "type": "favorites-genre-based",
+                              "title": "Based on your favorite genres",
+                              "description": "Books in genres you love",
+                              "books": [
+                                {
+                                  "id": 1,
+                                  "title": "The Great Gatsby",
+                                  "author": "F. Scott Fitzgerald",
+                                  "coverImageUrl": "https://example.com/gatsby.jpg",
+                                  "averageRating": 4.8,
+                                  "reviewCount": 1250
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                        """
+                )
+            )
+        )
+    })
+    public ResponseEntity<com.bookverse.dto.ApiResponse<List<RecommendationDTO>>> favoritesGenreBased(
+            @io.swagger.v3.oas.annotations.Parameter(description = "User ID for personalized recommendations", example = "1", required = true)
+            @RequestParam Long userId,
+            
+            @io.swagger.v3.oas.annotations.Parameter(description = "Number of recommendations to return", example = "10")
+            @RequestParam(defaultValue = "10") int limit
+    ) {
+        return ResponseEntity.ok(com.bookverse.dto.ApiResponse.ok(recommendationService.getGenreBasedFromFavorites(userId, limit)));
+    }
 }

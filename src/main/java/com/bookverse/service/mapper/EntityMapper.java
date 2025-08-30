@@ -69,8 +69,12 @@ public final class EntityMapper {
     public static FavoriteDTO toFavoriteDTO(Favorite favorite) {
         if (favorite == null) return null;
         return FavoriteDTO.builder()
+                .id(favorite.getId())
                 .userId(favorite.getUser() != null ? favorite.getUser().getId() : null)
                 .bookId(favorite.getBook() != null ? favorite.getBook().getId() : null)
+                .bookTitle(favorite.getBook() != null ? favorite.getBook().getTitle() : null)
+                .bookAuthor(favorite.getBook() != null ? favorite.getBook().getAuthor() : null)
+                .coverImageUrl(favorite.getBook() != null ? favorite.getBook().getCoverImageUrl() : null)
                 .createdAt(favorite.getCreatedAt())
                 .build();
     }

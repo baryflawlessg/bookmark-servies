@@ -21,6 +21,16 @@ jobs:
       run: |
         docker build -t ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }} .
         docker tag ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }} ${{ env.DOCKER_IMAGE }}:latest
+        docker save ${{ env.DOCKER_IMAGE }}:latest | gzip > bookverse-image.tar.gz
+
+    - name: Upload Docker image to EC2
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        source: "bookverse-image.tar.gz"
+        target: "/tmp/"
 
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v1.0.3
@@ -36,12 +46,15 @@ jobs:
           # Remove old image
           docker rmi bookverse:latest || true
           
+          # Load the new image
+          docker load < /tmp/bookverse-image.tar.gz
+          
           # Create application directory if it doesn't exist
-          mkdir -p /opt/bookverse
+          sudo mkdir -p /opt/bookverse
+          sudo chown ec2-user:ec2-user /opt/bookverse
           
           # Copy docker-compose.yml
           cat > /opt/bookverse/docker-compose.yml << 'EOF'
-          version: '3.8'
           services:
             bookverse:
               image: bookverse:latest

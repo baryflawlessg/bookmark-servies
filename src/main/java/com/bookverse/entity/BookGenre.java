@@ -31,26 +31,11 @@ public class BookGenre {
 
     // Genre enum
     public enum Genre {
-        FANTASY,
-        SCI_FI,
-        MYSTERY,
-        THRILLER,
         ROMANCE,
-        FICTION,
-        NON_FICTION,
-        BIOGRAPHY,
-        HISTORY,
-        SCIENCE,
-        TECHNOLOGY,
-        PHILOSOPHY,
-        POETRY,
-        DRAMA,
-        HORROR,
-        ADVENTURE,
-        CRIME,
-        HUMOR,
-        CHILDREN,
-        YOUNG_ADULT
+        SCI_FI,
+        FANTASY,
+        MYSTERY,
+        COMEDY
     }
 
     // Helper methods

@@ -28,9 +28,7 @@ public class RecommendationServiceImpl implements RecommendationService {
 
     @Override
     public List<RecommendationDTO> getTopRated(int limit) {
-        Page<Book> page = bookRepository.findBooks(
-            null, null, null, null, null, PageRequest.of(0, limit)
-        );
+        Page<Book> page = bookRepository.findTopRatedBooks(PageRequest.of(0, limit));
         List<BookDTO> books = page.getContent().stream()
                 .map(EntityMapper::toBookDTO)
                 .collect(Collectors.toList());
@@ -112,11 +110,11 @@ public class RecommendationServiceImpl implements RecommendationService {
 
     @Override
     public List<RecommendationDTO> getGenreBased(int limit) {
-        // Get books from popular genres (Fiction, Mystery, Romance, etc.)
+        // Get books from popular genres (Romance, Mystery, Fantasy, etc.)
         List<BookGenre.Genre> popularGenres = List.of(
-            BookGenre.Genre.FICTION,
-            BookGenre.Genre.MYSTERY,
             BookGenre.Genre.ROMANCE,
+            BookGenre.Genre.MYSTERY,
+            BookGenre.Genre.FANTASY,
             BookGenre.Genre.SCI_FI
         );
         

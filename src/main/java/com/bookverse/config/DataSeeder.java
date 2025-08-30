@@ -52,52 +52,52 @@ public class DataSeeder {
             createBook("The Great Gatsby", "F. Scott Fitzgerald", 
                 "A story of the fabulously wealthy Jay Gatsby and his love for the beautiful Daisy Buchanan.", 
                 1925, "https://example.com/gatsby.jpg", 
-                BookGenre.Genre.FICTION, BookGenre.Genre.ROMANCE),
+                BookGenre.Genre.ROMANCE),
             
             createBook("To Kill a Mockingbird", "Harper Lee", 
                 "The story of young Scout Finch and her father Atticus in a racially divided Alabama town.", 
                 1960, "https://example.com/mockingbird.jpg", 
-                BookGenre.Genre.FICTION, BookGenre.Genre.DRAMA),
+                BookGenre.Genre.MYSTERY),
             
             createBook("1984", "George Orwell", 
                 "A dystopian novel about totalitarianism and surveillance society.", 
                 1949, "https://example.com/1984.jpg", 
-                BookGenre.Genre.SCI_FI, BookGenre.Genre.FICTION),
+                BookGenre.Genre.SCI_FI),
             
             createBook("Pride and Prejudice", "Jane Austen", 
                 "The story of Elizabeth Bennet and Mr. Darcy in early 19th century England.", 
                 1813, "https://example.com/pride.jpg", 
-                BookGenre.Genre.ROMANCE, BookGenre.Genre.FICTION),
+                BookGenre.Genre.ROMANCE),
             
             createBook("The Hobbit", "J.R.R. Tolkien", 
                 "Bilbo Baggins embarks on an unexpected journey with a group of dwarves.", 
                 1937, "https://example.com/hobbit.jpg", 
-                BookGenre.Genre.FANTASY, BookGenre.Genre.ADVENTURE),
+                BookGenre.Genre.FANTASY),
             
             createBook("The Catcher in the Rye", "J.D. Salinger", 
                 "Holden Caulfield's journey through New York City after being expelled from prep school.", 
                 1951, "https://example.com/catcher.jpg", 
-                BookGenre.Genre.FICTION, BookGenre.Genre.YOUNG_ADULT),
+                BookGenre.Genre.MYSTERY),
             
             createBook("Lord of the Flies", "William Golding", 
                 "A group of British boys stranded on an uninhabited island try to govern themselves.", 
                 1954, "https://example.com/flies.jpg", 
-                BookGenre.Genre.FICTION, BookGenre.Genre.ADVENTURE),
+                BookGenre.Genre.MYSTERY),
             
             createBook("Animal Farm", "George Orwell", 
                 "A farm is taken over by its overworked, mistreated animals.", 
                 1945, "https://example.com/animal-farm.jpg", 
-                BookGenre.Genre.FICTION, BookGenre.Genre.HUMOR),
+                BookGenre.Genre.COMEDY),
             
             createBook("The Alchemist", "Paulo Coelho", 
                 "A shepherd boy named Santiago travels from his homeland in Spain to the Egyptian desert.", 
                 1988, "https://example.com/alchemist.jpg", 
-                BookGenre.Genre.FICTION, BookGenre.Genre.ADVENTURE),
+                BookGenre.Genre.FANTASY),
             
             createBook("Brave New World", "Aldous Huxley", 
                 "A dystopian novel about a futuristic society controlled by technology and conditioning.", 
                 1932, "https://example.com/brave-new-world.jpg", 
-                BookGenre.Genre.SCI_FI, BookGenre.Genre.FICTION)
+                BookGenre.Genre.SCI_FI)
         );
         
         bookRepository.saveAll(books);

@@ -8,7 +8,7 @@ import com.bookverse.entity.User;
 import com.bookverse.repository.UserRepository;
 import com.bookverse.service.UserService;
 import com.bookverse.service.mapper.EntityMapper;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -39,6 +39,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<UserDTO> login(UserLoginDTO request) {
         return userRepository.findByEmail(request.getEmail())
                 .filter(u -> passwordEncoder.matches(request.getPassword(), u.getPassword()))
@@ -46,6 +47,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<UserDTO> getCurrentUserProfile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && 
@@ -57,6 +59,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<UserDTO> getUserById(Long userId) {
         return userRepository.findById(userId).map(EntityMapper::toUserDTO);
     }

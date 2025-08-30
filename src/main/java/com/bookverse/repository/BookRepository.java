@@ -28,4 +28,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
         @Param("maxYear") Integer maxYear,
         @Param("minRating") Double minRating,
         Pageable pageable);
+
+    @Query("SELECT b FROM Book b ORDER BY COALESCE(b.averageRating, 0.0) DESC")
+    Page<Book> findTopRatedBooks(Pageable pageable);
 }

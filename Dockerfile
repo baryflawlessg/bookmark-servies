@@ -13,6 +13,7 @@ COPY src src
 
 # Build the application
 RUN gradle build --no-daemon
+RUN ls -la build/libs/
 
 # Runtime stage
 FROM openjdk:17-jdk-slim
@@ -21,7 +22,8 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the built JAR from builder stage
-COPY --from=builder /app/build/libs/bookmark-servies-*.jar app.jar
+COPY --from=builder /app/build/libs/bookmark-servies-0.0.1-SNAPSHOT.jar app.jar
+RUN ls -la /app/
 
 # Install curl for health check
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*

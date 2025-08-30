@@ -13,7 +13,10 @@ COPY src src
 
 # Build the application
 RUN gradle build --no-daemon
-RUN ls -la build/libs/
+RUN echo "=== Checking build output ==="
+RUN find . -name "*.jar" -type f
+RUN ls -la build/ || echo "build directory not found"
+RUN ls -la build/libs/ || echo "build/libs directory not found"
 
 # Runtime stage
 FROM openjdk:17-jdk-slim
@@ -22,7 +25,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the built JAR from builder stage
-COPY --from=builder /app/build/libs/bookmark-servies-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=builder /app/build/libs/*.jar app.jar
 RUN ls -la /app/
 
 # Install curl for health check

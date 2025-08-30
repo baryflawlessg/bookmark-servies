@@ -1,0 +1,75 @@
+name: Infrastructure Management
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Infrastructure action'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+        - plan
+        - apply
+        - destroy
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "1.5.0"
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Generate SSH Key
+      run: |
+        mkdir -p terraform/ssh
+        ssh-keygen -t rsa -b 2048 -f terraform/ssh/bookverse-key -N ""
+
+    - name: Terraform Init
+      working-directory: terraform
+      run: terraform init
+
+    - name: Terraform Plan
+      if: github.event.inputs.action == 'plan'
+      working-directory: terraform
+      run: terraform plan
+
+    - name: Terraform Apply
+      if: github.event.inputs.action == 'apply'
+      working-directory: terraform
+      run: terraform apply -auto-approve
+
+    - name: Terraform Destroy
+      if: github.event.inputs.action == 'destroy'
+      working-directory: terraform
+      run: terraform destroy -auto-approve
+
+    - name: Get Outputs
+      if: github.event.inputs.action == 'apply'
+      working-directory: terraform
+      run: |
+        echo "EC2_PUBLIC_IP=$(terraform output -raw public_ip)" >> $GITHUB_ENV
+        echo "EC2_INSTANCE_ID=$(terraform output -raw instance_id)" >> $GITHUB_ENV
+
+    - name: Update GitHub Secrets
+      if: github.event.inputs.action == 'apply'
+      run: |
+        echo "Infrastructure deployed successfully!"
+        echo "Public IP: ${{ env.EC2_PUBLIC_IP }}"
+        echo "Instance ID: ${{ env.EC2_INSTANCE_ID }}"
+        echo "Please update your GitHub repository secrets:"
+        echo "EC2_HOST: ${{ env.EC2_PUBLIC_IP }}"
+        echo "EC2_SSH_KEY: (copy the private key from terraform/ssh/bookverse-key)"

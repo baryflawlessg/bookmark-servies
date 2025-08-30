@@ -4,24 +4,18 @@ FROM openjdk:17-jdk-slim
 # Set working directory
 WORKDIR /app
 
-# Copy the Gradle wrapper files
-COPY gradlew .
-COPY gradle gradle
+# Copy the JAR file
+COPY build/libs/bookmark-servies-*.jar app.jar
 
-# Copy the build file
-COPY build.gradle .
-
-# Download dependencies
-RUN ./gradlew dependencies --no-daemon
-
-# Copy source code
-COPY src src
-
-# Build the application
-RUN ./gradlew build --no-daemon
-
-# Expose port
+# Expose port 8080
 EXPOSE 8080
 
+# Set environment variables
+ENV SPRING_PROFILES_ACTIVE=prod
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8080/api/health || exit 1
+
 # Run the application
-CMD ["java", "-jar", "build/libs/bookverse-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

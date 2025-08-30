@@ -1,0 +1,87 @@
+name: Build and Deploy BookVerse
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  DOCKER_IMAGE: bookverse
+  DOCKER_TAG: latest
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Build with Gradle
+      run: ./gradlew build
+
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }} .
+        docker tag ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }} ${{ env.DOCKER_IMAGE }}:latest
+
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ec2-user
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          # Stop existing container
+          docker stop bookverse-app || true
+          docker rm bookverse-app || true
+          
+          # Remove old image
+          docker rmi bookverse:latest || true
+          
+          # Create application directory if it doesn't exist
+          mkdir -p /opt/bookverse
+          
+          # Copy docker-compose.yml
+          cat > /opt/bookverse/docker-compose.yml << 'EOF'
+          version: '3.8'
+          services:
+            bookverse:
+              image: bookverse:latest
+              container_name: bookverse-app
+              ports:
+                - "8080:8080"
+              environment:
+                - SPRING_PROFILES_ACTIVE=prod
+              restart: unless-stopped
+              healthcheck:
+                test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+          EOF
+          
+          # Change to application directory
+          cd /opt/bookverse
+          
+          # Start the application
+          docker-compose up -d
+          
+          # Wait for application to be ready
+          sleep 30
+          
+          # Check if application is running
+          curl -f http://localhost:8080/api/health || exit 1
+          
+          echo "Deployment completed successfully!"
+
+    - name: Health Check
+      run: |
+        sleep 10
+        curl -f http://${{ secrets.EC2_HOST }}:8080/api/health || exit 1

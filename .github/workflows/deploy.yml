@@ -77,17 +77,40 @@ jobs:
           # Start the application
           docker-compose up -d
           
+          # Show container status
+          echo "Container status:"
+          docker ps -a
+          
+          # Show container logs
+          echo "Container logs:"
+          docker logs bookverse-app || echo "No logs yet"
+          
           # Wait for application to be ready (longer wait)
           sleep 60
           
           # Check if application is running (with retries)
-          for i in {1..5}; do
+          for i in {1..10}; do
+            echo "Attempt $i: Checking application health..."
+            
+            # Check if container is running
+            if ! docker ps | grep -q bookverse-app; then
+              echo "Container is not running, checking logs..."
+              docker logs bookverse-app || echo "No logs available"
+              sleep 30
+              continue
+            fi
+            
+            # Check what's listening on port 8080
+            echo "Port 8080 status:"
+            netstat -tlnp | grep :8080 || echo "Nothing listening on port 8080"
+            
+            # Try health check
             if curl -f http://localhost:8080/api/health; then
               echo "Application is healthy!"
               break
             else
               echo "Attempt $i: Application not ready yet, waiting..."
-              sleep 30
+              sleep 45
             fi
           done
           

@@ -49,64 +49,64 @@ jobs:
           # Load the new image
           docker load < /tmp/bookverse-image.tar.gz
           
-                     # Create application directory if it doesn't exist
-           sudo mkdir -p /opt/bookverse
-           sudo chown ec2-user:ec2-user /opt/bookverse
-           
-           # Copy docker-compose.yml
-           sudo tee /opt/bookverse/docker-compose.yml > /dev/null << 'EOF'
-           services:
-             bookverse:
-               image: bookverse:latest
-               container_name: bookverse-app
-               ports:
-                 - "8080:8080"
-               environment:
-                 - SPRING_PROFILES_ACTIVE=prod
-               restart: unless-stopped
-               healthcheck:
-                 test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
-                 interval: 30s
-                 timeout: 10s
-                 retries: 3
-           EOF
-           
-           # Change to application directory
-           cd /opt/bookverse
-           
-           # Start the application
-           docker-compose up -d
-           
-           # Wait for application to be ready (longer wait)
-           sleep 60
-           
-           # Check if application is running (with retries)
-           for i in {1..5}; do
-             if curl -f http://localhost:8080/api/health; then
-               echo "Application is healthy!"
-               break
-             else
-               echo "Attempt $i: Application not ready yet, waiting..."
-               sleep 30
-             fi
-           done
-           
-           # Final health check
-           curl -f http://localhost:8080/api/health || exit 1
+          # Create application directory if it doesn't exist
+          sudo mkdir -p /opt/bookverse
+          sudo chown ec2-user:ec2-user /opt/bookverse
+          
+          # Copy docker-compose.yml
+          sudo tee /opt/bookverse/docker-compose.yml > /dev/null << 'EOF'
+          services:
+            bookverse:
+              image: bookverse:latest
+              container_name: bookverse-app
+              ports:
+                - "8080:8080"
+              environment:
+                - SPRING_PROFILES_ACTIVE=prod
+              restart: unless-stopped
+              healthcheck:
+                test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+          EOF
+          
+          # Change to application directory
+          cd /opt/bookverse
+          
+          # Start the application
+          docker-compose up -d
+          
+          # Wait for application to be ready (longer wait)
+          sleep 60
+          
+          # Check if application is running (with retries)
+          for i in {1..5}; do
+            if curl -f http://localhost:8080/api/health; then
+              echo "Application is healthy!"
+              break
+            else
+              echo "Attempt $i: Application not ready yet, waiting..."
+              sleep 30
+            fi
+          done
+          
+          # Final health check
+          curl -f http://localhost:8080/api/health || exit 1
           
           echo "Deployment completed successfully!"
 
-         - name: Health Check
-       run: |
-         sleep 30
-         for i in {1..3}; do
-           if curl -f http://${{ secrets.EC2_HOST }}:8080/api/health; then
-             echo "External health check successful!"
-             exit 0
-           else
-             echo "Attempt $i: External health check failed, retrying..."
-             sleep 30
-           fi
-         done
-         echo "External health check failed after 3 attempts"
-         exit 1
+    - name: Health Check
+      run: |
+        sleep 30
+        for i in {1..3}; do
+          if curl -f http://${{ secrets.EC2_HOST }}:8080/api/health; then
+            echo "External health check successful!"
+            exit 0
+          else
+            echo "Attempt $i: External health check failed, retrying..."
+            sleep 30
+          fi
+        done
+        echo "External health check failed after 3 attempts"
+        exit 1

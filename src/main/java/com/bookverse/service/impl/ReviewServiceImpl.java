@@ -85,6 +85,11 @@ public class ReviewServiceImpl implements ReviewService {
         }
         
         Book book = review.getBook();
+        
+        // Remove the review from the book's list first
+        book.removeReview(review);
+        
+        // Delete the review
         reviewRepository.delete(review);
         
         // Update book's rating stats after deleting review

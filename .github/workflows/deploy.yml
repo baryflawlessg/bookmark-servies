@@ -63,6 +63,9 @@ jobs:
                 - "8080:8080"
               environment:
                 - SPRING_PROFILES_ACTIVE=prod
+                - SPRING_DATASOURCE_URL=jdbc:postgresql://aws-1-ap-south-1.pooler.supabase.com:5432/postgres?user=postgres.htqyclequvdyuqiocckq&password=B00kMark%40%231_1&sslmode=require
+                - LOGGING_LEVEL_COM_BOOKVERSE=DEBUG
+                - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB=DEBUG
               restart: unless-stopped
               healthcheck:
                 test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
@@ -85,6 +88,14 @@ jobs:
           echo "Container logs:"
           docker logs bookverse-app || echo "No logs yet"
           
+          # Check container details
+          echo "Container details:"
+          docker inspect bookverse-app | grep -A 10 -B 10 "PortBindings" || echo "No port bindings found"
+          
+          # Check if Spring Boot is listening inside container
+          echo "Checking inside container:"
+          docker exec bookverse-app netstat -tlnp 2>/dev/null || echo "Cannot exec into container"
+          
           # Wait for application to be ready (longer wait)
           sleep 60
           
@@ -100,9 +111,13 @@ jobs:
               continue
             fi
             
-            # Check what's listening on port 8080
-            echo "Port 8080 status:"
-            netstat -tlnp | grep :8080 || echo "Nothing listening on port 8080"
+             # Check what's listening on port 8080
+             echo "Port 8080 status:"
+             netstat -tlnp | grep :8080 || echo "Nothing listening on port 8080"
+             
+             # Check if anything is listening on any port
+             echo "All listening ports:"
+             netstat -tlnp | grep LISTEN || echo "No ports listening"
             
             # Try health check
             if curl -f http://localhost:8080/api/health; then

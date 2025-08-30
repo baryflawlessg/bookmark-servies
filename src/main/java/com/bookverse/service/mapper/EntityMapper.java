@@ -57,6 +57,7 @@ public final class EntityMapper {
         return ReviewDTO.builder()
                 .id(review.getId())
                 .bookId(review.getBook() != null ? review.getBook().getId() : null)
+                .bookTitle(review.getBook() != null ? review.getBook().getTitle() : null)
                 .userId(review.getUser() != null ? review.getUser().getId() : null)
                 .userName(review.getUser() != null ? review.getUser().getName() : null)
                 .rating(review.getRating())

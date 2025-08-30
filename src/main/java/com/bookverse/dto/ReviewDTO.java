@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class ReviewDTO {
     private Long id;
     private Long bookId;
+    private String bookTitle;
     private Long userId;
     private String userName;
     private Integer rating;

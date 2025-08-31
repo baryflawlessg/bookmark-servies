@@ -25,7 +25,7 @@
 - Search bar (title, author, genre)
 - Filter dropdowns (genre, rating, year)
 - Sort options (title, author, rating, date)
-- Pagination or infinite scroll
+- Pagination
 - Book cards with cover, title, author, rating
 - Loading states and empty states
 - Responsive design (mobile-friendly)
@@ -33,8 +33,8 @@
 ## Book Details Page
 - Book information display (cover, title, author, description, etc.)
 - Average rating display with star visualization
-- User's personal rating (if logged in)
-- Review form (rating + text) for authenticated users
+- User's personal rating
+- Review form (rating + text)
 - Reviews list with pagination
 - Review actions (edit/delete for own reviews)
 - Loading states and error handling
@@ -43,24 +43,13 @@
 - User information display
 - Review history with pagination
 - Favorite books list
-- Profile editing form (name, email, password)
-- Account deletion option
 - Loading states and form validation
 
 ## Recommendations Page
-- Personalized book recommendations grid
-- Recommendation categories (based on genre, similar users, etc.)
-- "Not interested" action for recommendations
-- Refresh recommendations button
+- Personalized book recommendations grid. Top rated books.
+- Recommendation of books based on genres of favourites
 - Loading states and empty states
-- Fallback to popular books if no recommendations
 
-## Home/Landing Page
-- Hero section with app description
-- Featured books carousel
-- Recent reviews section
-- Call-to-action buttons (Browse Books, Sign Up)
-- Responsive design for all screen sizes
 
 ## Global Components
 - LoadingSpinner (reusable)
@@ -74,19 +63,15 @@
 
 ## Testing Tasks
 - Unit tests for all components
-- Integration tests for auth flow
-- E2E tests for critical user journeys
 - Mock API responses for testing
 - Test coverage reporting
 
 ## Styling & UX
 - Consistent design system with Tailwind
-- Dark/light mode toggle (optional)
 - Accessibility compliance (ARIA labels, keyboard navigation)
 - Mobile-first responsive design
 - Smooth transitions and animations
 - Error states and empty states
-- Loading skeletons for better UX
 
 ## Performance & Optimization
 - Code splitting for routes

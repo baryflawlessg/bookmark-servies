@@ -106,7 +106,6 @@
 - GET /api/users/favorites - User's favorite books
 
 ### Recommendations Endpoints
-- GET /api/recommendations - All recommendation types
 - GET /api/recommendations/top-rated - Top rated books
 - GET /api/recommendations/genre-based - Genre-based recommendations
 - GET /api/recommendations/ai - AI-powered recommendations
@@ -120,8 +119,6 @@
 - Create pagination logic with proper metadata
 - Implement rating calculation algorithms
 - Create recommendation algorithms (top-rated, genre-based)
-- Implement AI recommendation integration with OpenAI API
-- Add fallback logic for AI recommendations
 - Create book filtering and sorting logic
 - Implement user activity tracking for recommendations
 
@@ -186,13 +183,6 @@
 - Add security headers
 - Implement audit logging for sensitive operations
 - Create security testing scenarios
-
-## Integration & External Services
-- Integrate OpenAI API for AI recommendations
-- Implement fallback mechanisms for external services
-- Add retry logic for external API calls
-- Create service health checks
-- Implement circuit breaker pattern (if needed)
 
 ## Monitoring & Logging
 - Set up application logging

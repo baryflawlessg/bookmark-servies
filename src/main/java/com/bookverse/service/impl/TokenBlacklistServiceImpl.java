@@ -13,11 +13,16 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
     
     @Override
     public void blacklistToken(String token) {
-        blacklistedTokens.add(token);
+        if (token != null) {
+            blacklistedTokens.add(token);
+        }
     }
     
     @Override
     public boolean isBlacklisted(String token) {
+        if (token == null) {
+            return false;
+        }
         return blacklistedTokens.contains(token);
     }
     

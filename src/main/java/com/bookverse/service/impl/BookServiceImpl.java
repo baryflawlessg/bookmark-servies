@@ -41,6 +41,7 @@ public class BookServiceImpl implements BookService {
         // Use the new findBooks method
         Page<Book> result = bookRepository.findBooks(
             criteria.getQuery(),
+            criteria.getAuthor(),
             criteria.getGenres(),
             criteria.getMinYear(),
             criteria.getMaxYear(),

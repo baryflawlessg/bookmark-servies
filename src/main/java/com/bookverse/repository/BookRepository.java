@@ -16,13 +16,15 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     @Query("SELECT DISTINCT b FROM Book b " +
            "LEFT JOIN b.genres g " +
-           "WHERE (:title IS NULL OR :title = '' OR b.title LIKE %:title%) " +
+           "WHERE (:title IS NULL OR :title = '' OR LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%'))) " +
+           "AND (:author IS NULL OR :author = '' OR LOWER(b.author) LIKE LOWER(CONCAT('%', :author, '%'))) " +
            "AND (:minYear IS NULL OR b.publishedYear >= :minYear) " +
            "AND (:maxYear IS NULL OR b.publishedYear <= :maxYear) " +
            "AND (:minRating IS NULL OR COALESCE(b.averageRating, 0.0) >= :minRating) " +
            "AND (:genres IS NULL OR g.genre IN :genres)")
     Page<Book> findBooks(
         @Param("title") String title,
+        @Param("author") String author,
         @Param("genres") List<BookGenre.Genre> genres,
         @Param("minYear") Integer minYear,
         @Param("maxYear") Integer maxYear,

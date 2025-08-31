@@ -39,7 +39,7 @@ class BookControllerTest {
 
         // Act
         ResponseEntity<ApiResponse<PageResponse<BookDTO>>> response = bookController.list(
-            "test", Arrays.asList(BookGenre.Genre.ROMANCE), 1900, 2024, 4.0, "title", "asc", 0, 20);
+            "test", "Test Author", Arrays.asList(BookGenre.Genre.ROMANCE), 1900, 2024, 4.0, "title", "asc", 0, 20);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());

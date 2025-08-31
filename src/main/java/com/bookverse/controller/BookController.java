@@ -67,6 +67,9 @@ public class BookController {
             @io.swagger.v3.oas.annotations.Parameter(description = "Search query for title or author", example = "gatsby")
             @RequestParam(value = "query", required = false) String query,
             
+            @io.swagger.v3.oas.annotations.Parameter(description = "Filter by author name", example = "F. Scott Fitzgerald")
+            @RequestParam(value = "author", required = false) String author,
+            
             @io.swagger.v3.oas.annotations.Parameter(description = "Filter by book genres", example = "FICTION,MYSTERY")
             @RequestParam(value = "genre", required = false) List<BookGenre.Genre> genres,
             
@@ -99,6 +102,7 @@ public class BookController {
         
         SearchCriteriaDTO criteria = SearchCriteriaDTO.builder()
                 .query(query)
+                .author(author)
                 .genres(genres)
                 .minYear(minYear)
                 .maxYear(maxYear)

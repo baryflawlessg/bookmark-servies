@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class SearchCriteriaDTO {
     private String query; // title or author
+    private String author; // specific author search
     private List<BookGenre.Genre> genres;
     private Integer minYear;
     private Integer maxYear;

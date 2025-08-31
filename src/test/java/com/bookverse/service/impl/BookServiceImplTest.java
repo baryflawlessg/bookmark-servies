@@ -153,6 +153,7 @@ class BookServiceImplTest {
         
         when(bookRepository.findBooks(
             eq(criteria.getQuery()),
+            eq(criteria.getAuthor()),
             eq(criteria.getGenres()),
             eq(criteria.getMinYear()),
             eq(criteria.getMaxYear()),
@@ -173,6 +174,7 @@ class BookServiceImplTest {
         // Verify repository was called with correct parameters
         verify(bookRepository, times(1)).findBooks(
             eq(criteria.getQuery()),
+            eq(criteria.getAuthor()),
             eq(criteria.getGenres()),
             eq(criteria.getMinYear()),
             eq(criteria.getMaxYear()),
@@ -200,7 +202,7 @@ class BookServiceImplTest {
         Page<Book> bookPage = new PageImpl<>(books, PageRequest.of(0, 20), 1);
         
         when(bookRepository.findBooks(
-            eq(null), eq(null), eq(null), eq(null), eq(null), any(Pageable.class)
+            eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), any(Pageable.class)
         )).thenReturn(bookPage);
 
         // Act
@@ -214,7 +216,7 @@ class BookServiceImplTest {
         assertEquals(20, result.getPagination().getSize()); // Default size
 
         verify(bookRepository, times(1)).findBooks(
-            eq(null), eq(null), eq(null), eq(null), eq(null), any(Pageable.class)
+            eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), any(Pageable.class)
         );
     }
 
@@ -231,6 +233,7 @@ class BookServiceImplTest {
         
         when(bookRepository.findBooks(
             eq(criteria.getQuery()),
+            eq(criteria.getAuthor()),
             eq(criteria.getGenres()),
             eq(criteria.getMinYear()),
             eq(criteria.getMaxYear()),
@@ -268,6 +271,7 @@ class BookServiceImplTest {
                 
                 when(bookRepository.findBooks(
                     eq(criteria.getQuery()),
+                    eq(criteria.getAuthor()),
                     eq(criteria.getGenres()),
                     eq(criteria.getMinYear()),
                     eq(criteria.getMaxYear()),
@@ -284,6 +288,7 @@ class BookServiceImplTest {
 
                 verify(bookRepository, times(1)).findBooks(
                     eq(criteria.getQuery()),
+                    eq(criteria.getAuthor()),
                     eq(criteria.getGenres()),
                     eq(criteria.getMinYear()),
                     eq(criteria.getMaxYear()),

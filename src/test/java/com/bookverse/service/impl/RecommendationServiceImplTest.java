@@ -251,6 +251,7 @@ class RecommendationServiceImplTest {
                 eq(null), 
                 eq(null), 
                 eq(null), 
+                eq(null), 
                 eq(PageRequest.of(0, limit))
         )).thenReturn(bookPage);
 
@@ -276,6 +277,7 @@ class RecommendationServiceImplTest {
                 eq(null), 
                 eq(null), 
                 eq(null), 
+                eq(null), 
                 eq(PageRequest.of(0, limit))
         );
         verifyNoMoreInteractions(bookRepository, favoriteRepository, bookGenreRepository);
@@ -288,6 +290,7 @@ class RecommendationServiceImplTest {
         List<Book> genreBooks = Arrays.asList(testBook1, testBook2, testBook3);
         Page<Book> bookPage = new PageImpl<>(genreBooks);
         when(bookRepository.findBooks(
+                eq(null), 
                 eq(null), 
                 anyList(), 
                 eq(null), 
@@ -312,6 +315,7 @@ class RecommendationServiceImplTest {
         // Verify repository calls
         verify(bookRepository, times(1)).findBooks(
                 eq(null), 
+                eq(null), 
                 anyList(), 
                 eq(null), 
                 eq(null), 
@@ -327,6 +331,7 @@ class RecommendationServiceImplTest {
         int limit = 5;
         Page<Book> emptyPage = new PageImpl<>(Collections.emptyList());
         when(bookRepository.findBooks(
+                eq(null), 
                 eq(null), 
                 anyList(), 
                 eq(null), 
@@ -351,6 +356,7 @@ class RecommendationServiceImplTest {
         // Verify repository calls
         verify(bookRepository, times(1)).findBooks(
                 eq(null), 
+                eq(null), 
                 anyList(), 
                 eq(null), 
                 eq(null), 
@@ -371,6 +377,7 @@ class RecommendationServiceImplTest {
         List<Book> recommendedBooks = Arrays.asList(testBook3);
         Page<Book> bookPage = new PageImpl<>(recommendedBooks);
         when(bookRepository.findBooks(
+                eq(null), 
                 eq(null), 
                 anyList(), 
                 eq(null), 
@@ -395,6 +402,7 @@ class RecommendationServiceImplTest {
         // Verify repository calls
         verify(favoriteRepository, times(1)).findByUserIdWithBook(userId);
         verify(bookRepository, times(1)).findBooks(
+                eq(null), 
                 eq(null), 
                 anyList(), 
                 eq(null), 

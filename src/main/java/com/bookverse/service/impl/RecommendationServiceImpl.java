@@ -73,7 +73,7 @@ public class RecommendationServiceImpl implements RecommendationService {
                     .collect(Collectors.toSet());
             
             Page<Book> genreBooks = bookRepository.findBooks(
-                    null, new ArrayList<>(userFavoriteGenres), null, null, null, 
+                    null, null, new ArrayList<>(userFavoriteGenres), null, null, null, 
                     PageRequest.of(0, limit * 2)
             );
             
@@ -120,7 +120,7 @@ public class RecommendationServiceImpl implements RecommendationService {
         );
         
         Page<Book> genreBooks = bookRepository.findBooks(
-            null, popularGenres, null, null, null, PageRequest.of(0, limit)
+            null, null, popularGenres, null, null, null, PageRequest.of(0, limit)
         );
         List<BookDTO> books = genreBooks.getContent().stream()
                 .map(EntityMapper::toBookDTO)
@@ -238,7 +238,7 @@ public class RecommendationServiceImpl implements RecommendationService {
         
         // Get books from top genres (no rating filter, will sort by rating later)
         Page<Book> genreBooks = bookRepository.findBooks(
-                null, topGenres, null, null, null, PageRequest.of(0, limit * 2)
+                null, null, topGenres, null, null, null, PageRequest.of(0, limit * 2)
         );
         
         System.out.println("DEBUG: Found " + genreBooks.getTotalElements() + " books in top genres");
@@ -292,7 +292,7 @@ public class RecommendationServiceImpl implements RecommendationService {
         if (bookIds.isEmpty()) {
             // If no favorites exist, return most reviewed books
             Page<Book> mostReviewed = bookRepository.findBooks(
-                null, null, null, null, null, PageRequest.of(0, limit)
+                null, null, null, null, null, null, PageRequest.of(0, limit)
             );
             return mostReviewed.getContent().stream()
                     .map(EntityMapper::toBookDTO)

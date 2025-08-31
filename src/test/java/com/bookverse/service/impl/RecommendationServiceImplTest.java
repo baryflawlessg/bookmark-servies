@@ -618,4 +618,297 @@ class RecommendationServiceImplTest {
         // Verify no repository calls were made
         verifyNoInteractions(bookRepository, favoriteRepository, bookGenreRepository);
     }
+
+    @Test
+    void getUserBasedRecommendations_WithBookHavingNullRating_ShouldHandleGracefully() {
+        // Arrange
+        Long userId = 1L;
+        int limit = 5;
+        
+        // Create a book with null rating but valid genres
+        Book bookWithNullRating = new Book();
+        bookWithNullRating.setId(4L);
+        bookWithNullRating.setTitle("Book with Null Rating");
+        bookWithNullRating.setAuthor("Null Author");
+        bookWithNullRating.setAverageRating(null);
+        bookWithNullRating.setGenres(Arrays.asList(romanceGenre));
+        
+        testFavorite1.setBook(bookWithNullRating);
+        when(favoriteRepository.findByUserIdWithBook(userId)).thenReturn(Arrays.asList(testFavorite1));
+        
+        // Mock genre books response
+        List<Book> genreBooks = Arrays.asList(testBook1, testBook2, testBook3);
+        Page<Book> genreBooksPage = new PageImpl<>(genreBooks);
+        when(bookRepository.findBooks(
+            eq(null), eq(null), eq(Arrays.asList(BookGenre.Genre.ROMANCE)), eq(null), eq(null), eq(null), 
+            eq(PageRequest.of(0, limit * 2))
+        )).thenReturn(genreBooksPage);
+        
+        // Mock popular books fallback (in case genre-based recommendations are insufficient)
+        List<Book> popularBooks = Arrays.asList(testBook1, testBook2);
+        Page<Object[]> mostFavoritedPage = new PageImpl<>(Arrays.asList(
+                new Object[]{1L, 5L},
+                new Object[]{2L, 3L}
+        ));
+        when(favoriteRepository.findMostFavoritedBooks(PageRequest.of(0, limit))).thenReturn(mostFavoritedPage);
+        when(bookRepository.findAllById(Arrays.asList(1L, 2L))).thenReturn(popularBooks);
+
+        // Act
+        List<RecommendationDTO> result = recommendationService.getUserBasedRecommendations(userId, limit);
+
+        // Assert
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        
+        // Verify repository calls
+        verify(favoriteRepository, times(1)).findByUserIdWithBook(userId);
+        verify(bookRepository, times(1)).findBooks(
+            eq(null), eq(null), eq(Arrays.asList(BookGenre.Genre.ROMANCE)), eq(null), eq(null), eq(null), 
+            eq(PageRequest.of(0, limit * 2))
+        );
+    }
+
+    @Test
+    void getUserBasedRecommendations_WithBookHavingNullGenres_ShouldHandleGracefully() {
+        // Arrange
+        Long userId = 1L;
+        int limit = 5;
+        
+        // Create a book with null genres
+        Book bookWithNullGenres = new Book();
+        bookWithNullGenres.setId(5L);
+        bookWithNullGenres.setTitle("Book with Null Genres");
+        bookWithNullGenres.setAuthor("Null Genres Author");
+        bookWithNullGenres.setAverageRating(4.0);
+        bookWithNullGenres.setGenres(null);
+        
+        testFavorite1.setBook(bookWithNullGenres);
+        when(favoriteRepository.findByUserIdWithBook(userId)).thenReturn(Arrays.asList(testFavorite1));
+        
+        // Mock popular books fallback since no genres
+        List<Book> popularBooks = Arrays.asList(testBook1, testBook2);
+        Page<Object[]> mostFavoritedPage = new PageImpl<>(Arrays.asList(
+                new Object[]{1L, 5L},
+                new Object[]{2L, 3L}
+        ));
+        when(favoriteRepository.findMostFavoritedBooks(PageRequest.of(0, limit))).thenReturn(mostFavoritedPage);
+        when(bookRepository.findAllById(Arrays.asList(1L, 2L))).thenReturn(popularBooks);
+
+        // Act
+        List<RecommendationDTO> result = recommendationService.getUserBasedRecommendations(userId, limit);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        
+        RecommendationDTO recommendation = result.get(0);
+        assertEquals("popular", recommendation.getType());
+        
+        // Verify repository calls
+        verify(favoriteRepository, times(1)).findByUserIdWithBook(userId);
+        verify(favoriteRepository, times(1)).findMostFavoritedBooks(PageRequest.of(0, limit));
+        verify(bookRepository, times(1)).findAllById(Arrays.asList(1L, 2L));
+    }
+
+    @Test
+    void getUserBasedRecommendations_WithBookHavingEmptyGenres_ShouldReturnPopularBooks() {
+        // Arrange
+        Long userId = 1L;
+        int limit = 5;
+        
+        // Create a book with empty genres
+        Book bookWithEmptyGenres = new Book();
+        bookWithEmptyGenres.setId(6L);
+        bookWithEmptyGenres.setTitle("Book with Empty Genres");
+        bookWithEmptyGenres.setAuthor("Empty Genres Author");
+        bookWithEmptyGenres.setAverageRating(4.0);
+        bookWithEmptyGenres.setGenres(new ArrayList<>());
+        
+        testFavorite1.setBook(bookWithEmptyGenres);
+        when(favoriteRepository.findByUserIdWithBook(userId)).thenReturn(Arrays.asList(testFavorite1));
+        
+        // Mock popular books fallback since no genres
+        List<Book> popularBooks = Arrays.asList(testBook1, testBook2);
+        Page<Object[]> mostFavoritedPage = new PageImpl<>(Arrays.asList(
+                new Object[]{1L, 5L},
+                new Object[]{2L, 3L}
+        ));
+        when(favoriteRepository.findMostFavoritedBooks(PageRequest.of(0, limit))).thenReturn(mostFavoritedPage);
+        when(bookRepository.findAllById(Arrays.asList(1L, 2L))).thenReturn(popularBooks);
+
+        // Act
+        List<RecommendationDTO> result = recommendationService.getUserBasedRecommendations(userId, limit);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        
+        RecommendationDTO recommendation = result.get(0);
+        assertEquals("popular", recommendation.getType());
+        
+        // Verify repository calls
+        verify(favoriteRepository, times(1)).findByUserIdWithBook(userId);
+        verify(favoriteRepository, times(1)).findMostFavoritedBooks(PageRequest.of(0, limit));
+        verify(bookRepository, times(1)).findAllById(Arrays.asList(1L, 2L));
+    }
+
+    @Test
+    void getGenreBasedFromFavorites_WithBookHavingNullRating_ShouldHandleGracefully() {
+        // Arrange
+        Long userId = 1L;
+        int limit = 5;
+        
+        // Create a book with null rating
+        Book bookWithNullRating = new Book();
+        bookWithNullRating.setId(7L);
+        bookWithNullRating.setTitle("Book with Null Rating");
+        bookWithNullRating.setAuthor("Null Author");
+        bookWithNullRating.setAverageRating(null);
+        bookWithNullRating.setGenres(Arrays.asList(romanceGenre));
+        
+        testFavorite1.setBook(bookWithNullRating);
+        when(favoriteRepository.findByUserIdWithBook(userId)).thenReturn(Arrays.asList(testFavorite1));
+        
+        // Mock genre books response
+        List<Book> genreBooks = Arrays.asList(testBook1, testBook2, testBook3);
+        Page<Book> genreBooksPage = new PageImpl<>(genreBooks);
+        when(bookRepository.findBooks(
+            eq(null), eq(null), eq(Arrays.asList(BookGenre.Genre.ROMANCE)), eq(null), eq(null), eq(null), 
+            eq(PageRequest.of(0, limit * 2))
+        )).thenReturn(genreBooksPage);
+
+        // Act
+        List<RecommendationDTO> result = recommendationService.getGenreBasedFromFavorites(userId, limit);
+
+        // Assert
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        
+        // Verify repository calls
+        verify(favoriteRepository, times(1)).findByUserIdWithBook(userId);
+        verify(bookRepository, times(1)).findBooks(
+            eq(null), eq(null), eq(Arrays.asList(BookGenre.Genre.ROMANCE)), eq(null), eq(null), eq(null), 
+            eq(PageRequest.of(0, limit * 2))
+        );
+    }
+
+    @Test
+    void getGenreBasedFromFavorites_WithBookHavingNullGenres_ShouldHandleGracefully() {
+        // Arrange
+        Long userId = 1L;
+        int limit = 5;
+        
+        // Create a book with null genres
+        Book bookWithNullGenres = new Book();
+        bookWithNullGenres.setId(8L);
+        bookWithNullGenres.setTitle("Book with Null Genres");
+        bookWithNullGenres.setAuthor("Null Genres Author");
+        bookWithNullGenres.setAverageRating(4.0);
+        bookWithNullGenres.setGenres(null);
+        
+        testFavorite1.setBook(bookWithNullGenres);
+        when(favoriteRepository.findByUserIdWithBook(userId)).thenReturn(Arrays.asList(testFavorite1));
+        
+        // Mock popular books fallback since no genres
+        List<Book> popularBooks = Arrays.asList(testBook1, testBook2);
+        Page<Object[]> mostFavoritedPage = new PageImpl<>(Arrays.asList(
+                new Object[]{1L, 5L},
+                new Object[]{2L, 3L}
+        ));
+        when(favoriteRepository.findMostFavoritedBooks(PageRequest.of(0, limit))).thenReturn(mostFavoritedPage);
+        when(bookRepository.findAllById(Arrays.asList(1L, 2L))).thenReturn(popularBooks);
+
+        // Act
+        List<RecommendationDTO> result = recommendationService.getGenreBasedFromFavorites(userId, limit);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        
+        RecommendationDTO recommendation = result.get(0);
+        assertEquals("favorites-genre-based", recommendation.getType());
+        
+        // Verify repository calls
+        verify(favoriteRepository, times(1)).findByUserIdWithBook(userId);
+    }
+
+    @Test
+    void getGenreBasedFromFavorites_WithBookHavingEmptyGenres_ShouldReturnPopularBooks() {
+        // Arrange
+        Long userId = 1L;
+        int limit = 5;
+        
+        // Create a book with empty genres
+        Book bookWithEmptyGenres = new Book();
+        bookWithEmptyGenres.setId(9L);
+        bookWithEmptyGenres.setTitle("Book with Empty Genres");
+        bookWithEmptyGenres.setAuthor("Empty Genres Author");
+        bookWithEmptyGenres.setAverageRating(4.0);
+        bookWithEmptyGenres.setGenres(new ArrayList<>());
+        
+        testFavorite1.setBook(bookWithEmptyGenres);
+        when(favoriteRepository.findByUserIdWithBook(userId)).thenReturn(Arrays.asList(testFavorite1));
+        
+        // Mock popular books fallback since no genres
+        List<Book> popularBooks = Arrays.asList(testBook1, testBook2);
+        Page<Object[]> mostFavoritedPage = new PageImpl<>(Arrays.asList(
+                new Object[]{1L, 5L},
+                new Object[]{2L, 3L}
+        ));
+        when(favoriteRepository.findMostFavoritedBooks(PageRequest.of(0, limit))).thenReturn(mostFavoritedPage);
+        when(bookRepository.findAllById(Arrays.asList(1L, 2L))).thenReturn(popularBooks);
+
+        // Act
+        List<RecommendationDTO> result = recommendationService.getGenreBasedFromFavorites(userId, limit);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        
+        RecommendationDTO recommendation = result.get(0);
+        assertEquals("favorites-genre-based", recommendation.getType());
+        
+        // Verify repository calls
+        verify(favoriteRepository, times(1)).findByUserIdWithBook(userId);
+    }
+
+    @Test
+    void getPopularBooksInPopularGenres_WithNoFavorites_ShouldFallbackToMostReviewed() {
+        // Arrange
+        int limit = 5;
+        
+        // Mock empty favorites
+        Page<Object[]> emptyFavoritedPage = new PageImpl<>(new ArrayList<>());
+        when(favoriteRepository.findMostFavoritedBooks(PageRequest.of(0, limit))).thenReturn(emptyFavoritedPage);
+        
+        // Mock most reviewed books fallback
+        List<Book> mostReviewedBooks = Arrays.asList(testBook1, testBook2, testBook3);
+        Page<Book> mostReviewedPage = new PageImpl<>(mostReviewedBooks);
+        when(bookRepository.findBooks(
+            eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), 
+            eq(PageRequest.of(0, limit))
+        )).thenReturn(mostReviewedPage);
+
+        // Act - This is a private method, so we test it indirectly through getGenreBasedFromFavorites
+        Long userId = 1L;
+        when(favoriteRepository.findByUserIdWithBook(userId)).thenReturn(Collections.emptyList());
+        
+        List<RecommendationDTO> result = recommendationService.getGenreBasedFromFavorites(userId, limit);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        
+        RecommendationDTO recommendation = result.get(0);
+        assertEquals("popular", recommendation.getType());
+        assertTrue(recommendation.getBooks().size() > 0);
+        
+        // Verify repository calls
+        verify(favoriteRepository, times(1)).findByUserIdWithBook(userId);
+        verify(favoriteRepository, times(1)).findMostFavoritedBooks(PageRequest.of(0, limit));
+        verify(bookRepository, times(1)).findBooks(
+            eq(null), eq(null), eq(null), eq(null), eq(null), eq(null), 
+            eq(PageRequest.of(0, limit))
+        );
+    }
 }

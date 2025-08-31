@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +63,10 @@ public class RecommendationServiceImpl implements RecommendationService {
         
         // Get genres from user's favorite books
         Set<BookGenre.Genre> userFavoriteGenres = userFavorites.stream()
-                .flatMap(favorite -> favorite.getBook().getGenres().stream())
+                .flatMap(favorite -> {
+                    List<BookGenre> genres = favorite.getBook().getGenres();
+                    return genres != null ? genres.stream() : Stream.empty();
+                })
                 .map(BookGenre::getGenre)
                 .collect(Collectors.toSet());
         

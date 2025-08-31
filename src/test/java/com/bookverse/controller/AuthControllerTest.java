@@ -120,7 +120,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void logout_ShouldBlacklistTokenAndReturnSuccess() {
+    void logout_WithValidBearerToken_ShouldBlacklistTokenAndReturnSuccess() {
         // Arrange
         when(request.getHeader("Authorization")).thenReturn("Bearer jwt-token");
 
@@ -132,6 +132,66 @@ class AuthControllerTest {
         assertTrue(response.getBody().isSuccess());
         assertEquals("Logged out successfully", response.getBody().getData());
         verify(tokenBlacklistService).blacklistToken("jwt-token");
+    }
+
+    @Test
+    void logout_WithNoAuthorizationHeader_ShouldReturnSuccessWithoutBlacklisting() {
+        // Arrange
+        when(request.getHeader("Authorization")).thenReturn(null);
+
+        // Act
+        ResponseEntity<ApiResponse<String>> response = authController.logout(request);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().isSuccess());
+        assertEquals("Logged out successfully", response.getBody().getData());
+        verifyNoInteractions(tokenBlacklistService);
+    }
+
+    @Test
+    void logout_WithAuthorizationHeaderWithoutBearer_ShouldReturnSuccessWithoutBlacklisting() {
+        // Arrange
+        when(request.getHeader("Authorization")).thenReturn("jwt-token");
+
+        // Act
+        ResponseEntity<ApiResponse<String>> response = authController.logout(request);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().isSuccess());
+        assertEquals("Logged out successfully", response.getBody().getData());
+        verifyNoInteractions(tokenBlacklistService);
+    }
+
+    @Test
+    void logout_WithEmptyAuthorizationHeader_ShouldReturnSuccessWithoutBlacklisting() {
+        // Arrange
+        when(request.getHeader("Authorization")).thenReturn("");
+
+        // Act
+        ResponseEntity<ApiResponse<String>> response = authController.logout(request);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().isSuccess());
+        assertEquals("Logged out successfully", response.getBody().getData());
+        verifyNoInteractions(tokenBlacklistService);
+    }
+
+    @Test
+    void logout_WithBearerOnly_ShouldReturnSuccessWithoutBlacklisting() {
+        // Arrange
+        when(request.getHeader("Authorization")).thenReturn("Bearer ");
+
+        // Act
+        ResponseEntity<ApiResponse<String>> response = authController.logout(request);
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertTrue(response.getBody().isSuccess());
+        assertEquals("Logged out successfully", response.getBody().getData());
+        verify(tokenBlacklistService).blacklistToken("");
     }
 
     @Test
@@ -159,6 +219,39 @@ class AuthControllerTest {
     }
 
     @Test
+    void getCurrentUser_WithNonAuthenticatedUser_ShouldReturnUnauthorized() {
+        // Arrange
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.isAuthenticated()).thenReturn(false);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Act
+        ResponseEntity<ApiResponse<UserDTO>> response = authController.getCurrentUser();
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertFalse(response.getBody().isSuccess());
+        assertEquals("Not authenticated", response.getBody().getMessage());
+        verifyNoInteractions(userService);
+    }
+
+    @Test
+    void getCurrentUser_WithNullAuthentication_ShouldReturnUnauthorized() {
+        // Arrange
+        when(securityContext.getAuthentication()).thenReturn(null);
+        SecurityContextHolder.setContext(securityContext);
+
+        // Act
+        ResponseEntity<ApiResponse<UserDTO>> response = authController.getCurrentUser();
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertFalse(response.getBody().isSuccess());
+        assertEquals("Not authenticated", response.getBody().getMessage());
+        verifyNoInteractions(userService);
+    }
+
+    @Test
     void getCurrentUser_WithAnonymousUser_ShouldReturnUnauthorized() {
         // Arrange
         when(securityContext.getAuthentication()).thenReturn(authentication);
@@ -174,5 +267,24 @@ class AuthControllerTest {
         assertFalse(response.getBody().isSuccess());
         assertEquals("Not authenticated", response.getBody().getMessage());
         verifyNoInteractions(userService);
+    }
+
+    @Test
+    void getCurrentUser_WithUserNotFound_ShouldReturnNotFound() {
+        // Arrange
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        when(authentication.isAuthenticated()).thenReturn(true);
+        when(authentication.getName()).thenReturn("john@example.com");
+        when(userService.getCurrentUserProfile()).thenReturn(Optional.empty());
+        SecurityContextHolder.setContext(securityContext);
+
+        // Act
+        ResponseEntity<ApiResponse<UserDTO>> response = authController.getCurrentUser();
+
+        // Assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertFalse(response.getBody().isSuccess());
+        assertEquals("User not found", response.getBody().getMessage());
+        verify(userService).getCurrentUserProfile();
     }
 }
